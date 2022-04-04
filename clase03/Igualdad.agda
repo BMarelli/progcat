@@ -99,10 +99,10 @@ subst P {a} {.a} refl x = x
 {- Probar sym y trans usando subst -}
 
 sym' : {A : Set} → {a b : A} → a ≡ b → b ≡ a
-sym' {a = a} p = subst {!!} {!!} {!!}
+sym' {a = a} p = subst (λ x → x ≡ a) p refl
 
 trans' : {A : Set}{a b c : A} → a ≡ b → b ≡ c → a ≡ c
-trans' {a = a} ab bc = subst {!!} {!!} {!!}
+trans' {a = a} {c} ab bc = subst ((λ x → a ≡ x)) bc ab
 
 --------------------------------------------------
 
@@ -121,7 +121,7 @@ open import Data.Nat hiding (_⊔_)
 
 +0 : (n : ℕ) → n + zero ≡ n
 +0 zero = refl
-+0 (suc otron) = cong suc (+0 otron)
++0 (suc n) = cong suc (+0 n)
 
 {- Notar que la primera igualdad se deriva de una igualdad
   definicional, mientras que en la segunda hay querealizar cierto
@@ -133,6 +133,10 @@ open import Data.Nat hiding (_⊔_)
 +suc : (m n : ℕ) → m + suc n ≡ suc (m + n)
 +suc zero n = refl
 +suc (suc m) n = cong suc (+suc m n)
+
+suc+ : (m n : ℕ) → suc m + n ≡ suc (m + n)
+suc+ m zero = refl
+suc+ m (suc n) = cong suc refl 
 
 {- Probemos que esta suma es equivalente a la otra -}
 _+'_ : ℕ → ℕ → ℕ
@@ -173,16 +177,50 @@ suma-equiv' x (suc y) =
 intentar que la prueba sea legible usando ≡-Reasoning
 -}
 +-comm : (m n : ℕ) → m + n ≡ n + m
-+-comm m n = {!!}
++-comm m zero = +0 m
++-comm m (suc n) = 
+  begin
+    (m + suc n)
+  ≡⟨ +suc m n ⟩
+    suc (m + n)
+  ≡⟨ cong suc (+-comm m n) ⟩
+    suc (n + m)
+  ≡⟨ sym (suc+ n m) ⟩
+    (suc n) + m
+  ∎
 
 +-assoc : (m n l : ℕ) → m + (n + l) ≡ (m + n) + l
-+-assoc m n l = {!!}
++-assoc zero n l = refl
++-assoc (suc m) n l = cong suc (+-assoc m n l)
+-- +-assoc (suc m) n l =
+--   begin
+--     (suc m) + (n + l)
+--   ≡⟨ suc+ m (n + l) ⟩
+--     suc (m + (n + l))
+--   ≡⟨ cong suc (+-assoc m n l) ⟩
+--     suc ((m + n) + l)
+--   ≡⟨ suc+ (m + n) l ⟩
+--     (suc (m + n)) + l
+--   ≡⟨ cong (λ x → x + l) (sym (suc+ m n)) ⟩
+--     ((suc m) + n) + l
+--   ∎
 
 *0 : ∀ m → 0 ≡ m * 0
-*0 m = {!   !}
+*0 zero = refl
+*0 (suc m) = *0 m
 
 *suc : (m n : ℕ) → m + m * n ≡ m * suc n
-*suc m n = {!   !} 
+*suc zero n = refl
+*suc (suc m) n =
+  begin
+    (suc m) + (suc m) * n
+  ≡⟨ refl ⟩
+    (suc m) + (n + (m * n)) 
+  ≡⟨ +-assoc (suc m) n  (m * n) ⟩
+    ((suc m) + n) + (m * n)
+  ≡⟨ {!   !} ⟩
+    {!   !}
+  ∎
 
 *-comm : (m n : ℕ) → m * n ≡ n * m
 *-comm m n = {!   !}
@@ -401,3 +439,4 @@ m ≡₂ n = mod₂ m ≡ mod₂ n
 
 _≡₂?_ : (m n : ℕ) → Dec (m ≡₂ n)
 m ≡₂? n = {!   !}
+     
