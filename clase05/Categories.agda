@@ -228,11 +228,18 @@ morfismos son los elementos de un monoide M -}
 
 module CatMon where
 
- open import Records-completo hiding (Iso ; ⊤)
+  open import Records-completo hiding (Iso ; ⊤)
 
- CatMon : Monoid → Cat
- CatMon M = {!!} 
-
+  CatMon : Monoid → Cat
+  CatMon M = record
+              { Obj = Lift (lsuc lzero) ⊤
+              ; Hom = λ x y → ⊤
+              ; iden = tt
+              ; _∙_ = λ x y → tt
+              ; idl = refl
+              ; idr = refl
+              ; ass = refl
+              }
 
 --------------------------------------------------
 {- Ejercicio: Definir la categoría en que los objetos son monoides,
@@ -241,13 +248,22 @@ module CatMon where
 
 module MonCat where
 
- open import Records-completo hiding (Iso)
+  open import Records-completo hiding (Iso)
 
- open Is-Monoid-Homo
+  open Is-Monoid-Homo
+  open Monoid
 
 
- MonCat : Cat
- MonCat = {!!}
+  MonCat : Cat
+  MonCat = record
+            { Obj = Monoid
+            ; Hom = λ M N → Carrier M  → Carrier N
+            ; iden = id
+            ; _∙_ = λ M N f → M (N f)
+            ; idl = refl
+            ; idr = refl
+            ; ass = refl
+            }
  
 --------------------------------------------------
 {- Ejercicio: Dada un categoría C, definir la siguiente categoría:
@@ -259,11 +275,35 @@ module MonCat where
 
 module ArrowCat (C : Cat) where
 
- open Cat C 
+  open Cat C
 
 
- ArrowCat : Cat
- ArrowCat = {!!}
+  record ArrowObj : Set₁ where
+    field
+      from : Obj
+      to : Obj
+      hom : Hom from to 
+  open ArrowObj
+
+  record ArrowMorf {A A' B B' : ArrowObj}
+                   (f : Hom (ArrowObj.from A) (ArrowObj.to B)) 
+                   (f' : Hom (ArrowObj.from A') (ArrowObj.to B')) : Set where 
+    constructor _,_
+    field
+      g₁ : Hom (ArrowObj.from A) (ArrowObj.from A')
+      g₂ : Hom (ArrowObj.to B) (ArrowObj.to B')
+      prop :  f' ∙ g₁ ≡ g₂ ∙ f
+
+  ArrowCat : Cat
+  ArrowCat = record
+               { Obj = ArrowObj
+               ; Hom = λ f g → {!  !}
+               ; iden = {!   !} 
+               ; _∙_ = {!   !}
+               ; idl = {!   !}
+               ; idr = {!   !}
+               ; ass = {!   !}
+               }
  
 --------------------------------------------------
 {- Generalizamos la noción de isomorfismo de la clase pasada a cualquier categoría -}
@@ -312,5 +352,4 @@ Ayuda : puede ser útil usar cong-app
 -}
 
 --------------------------------------------------
-
-
+   
