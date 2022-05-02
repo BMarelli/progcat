@@ -294,10 +294,13 @@ module ArrowCat (C : Cat) where
       g₂ : Hom (ArrowObj.to B) (ArrowObj.to B')
       prop :  f' ∙ g₁ ≡ g₂ ∙ f
 
+  ArrowHom : ArrowObj → ArrowObj → Set
+  ArrowHom ?
+
   ArrowCat : Cat
   ArrowCat = record
                { Obj = ArrowObj
-               ; Hom = λ f g → {!  !}
+               ; Hom = {!   !}
                ; iden = {!   !} 
                ; _∙_ = {!   !}
                ; idl = {!   !}

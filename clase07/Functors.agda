@@ -103,18 +103,29 @@ MaybeF-comp nothing = refl
 MaybeF : Fun Sets Sets
 MaybeF = functor Maybe
                  mapMaybe
-                (ext (MaybeF-id))
+                 (ext (MaybeF-id))
                  (ext (λ x → MaybeF-comp x))
 
 
 -- Ejercicio: Funtor Lista
-open import Data.List.Base using (List ; [] ; _∷_) renaming (map to mapList) public
+module FunctorList where
+  open import Data.List.Base using (List ; [] ; _∷_) renaming (map to mapList) public
+  open Cat Sets using () renaming (_∙_ to _∙s_)
 
-ListF : Fun Sets Sets
-ListF = functor List
-                mapList
-                {!!}
-                {!!}
+  fid-proof : {X : Obj Sets} -> (xs : List X) -> mapList (iden Sets) xs ≅ iden Sets xs
+  fid-proof [] = refl
+  fid-proof (x ∷ xs) = cong (λ vs → x ∷ vs) (fid-proof xs)
+  
+  fcomp-proof : {X Y Z : Obj Sets} {f : Hom Sets Y Z} {g : Hom Sets X Y}
+                -> (xs : List X) -> mapList (f ∙s g) xs ≅ (mapList f ∙s mapList g) xs
+  fcomp-proof [] = refl
+  fcomp-proof {f = f} {g = g} (x ∷ xs) = cong (λ vs → (f (g x)) ∷ vs) (fcomp-proof xs)
+
+  ListF : Fun Sets Sets
+  ListF = functor List
+                  mapList
+                  (ext fid-proof)
+                  (ext fcomp-proof)
 
 -- Ejercicio EXTRA: Bifuntor de árboles con diferente información en nodos y hojas
 data Tree (A B : Set) : Set where
@@ -131,8 +142,26 @@ TreeF = {!!}
 {- Ejercicio: Hom functor : probar que el Hom de una categoría C
   es un bifunctor Hom : (C Op) ×C C → Sets
   -}
-HomF : ∀{a}{b}{C : Cat {a} {b}} → Fun ((C Op) ×C C) (Categories.Sets.Sets {b})
-HomF {C = C} = {!   !}
+module HomBifunctor where
+  
+  -- fid-proof : {X : Obj C × Obj C}
+  --             -> (C : Cat) -> (λ { (f , g) → λ x → g ∙c x ∙c f }) (iden C , iden C) ≅ (λ x → x)
+  -- fid-proof = {!   !}
+
+  HomF : ∀{a}{b}{C : Cat {a} {b}} → Fun ((C Op) ×C C) (Categories.Sets.Sets {b})
+  HomF {C = C} = let open Cat C using () renaming (_∙_ to _∙c_)
+                 in functor
+                      (λ p → Hom C (fst p) (snd p))
+                      (λ { (f , g) → λ x → g ∙c (x ∙c f)})
+                      -- (proof
+                      --   (λ { (f , g) → λ x → g ∙c x ∙c f }) (iden C , iden C)
+                      --  ≅⟨ {!   !} ⟩
+                      --   {!   !}
+                      --  ≅⟨ {!   !} ⟩
+                      --   (λ x → x)
+                      --  ∎)
+                      {!   !}
+                      {!   !}
 
 --------------------------------------------------
 {- Composición de funtores -}
@@ -145,13 +174,20 @@ _○_ {D = D}{E = E}{C = C} F G =
     (OMap F ∘ OMap G) 
      (HMap F ∘ HMap G) 
      (proof         
-       HMap F (HMap G (iden C))       
+       HMap F (HMap G (iden C))
       ≅⟨ cong (HMap F) (fid G) ⟩
-       HMap F (iden D) 
+       HMap F (iden D)
       ≅⟨ fid F ⟩
        iden E
      ∎) 
-     {!   !}
+     λ {_ _ _ f g} →
+      (proof
+        HMap F (HMap G (f ∙c g))
+      ≅⟨ cong (HMap F)  (fcomp G) ⟩
+        HMap F ((HMap G f) ∙d (HMap G g))
+      ≅⟨ fcomp F ⟩
+        (HMap F (HMap G f)) ∙e (HMap F (HMap G g))
+      ∎)
     
 infixr 10 _○_
 
@@ -199,12 +235,34 @@ que si tenemos un funtor F : C → D, y f es un componente de un
 isomorfismo en C, entonces (HMap F f) es un isomorfismo en D.
 
 -}
+module FunctorIso where
+  open import Categories.Iso
 
-open import Categories.Iso
-
-FunIso : (F : Fun C D) → ∀{X Y}(f : Hom C X Y)
-       → Iso C f → Iso D (HMap F f)
-FunIso  = {! !}
+  FunIso : (F : Fun C D) → ∀{X Y}(f : Hom C X Y)
+           → Iso C f → Iso D (HMap F f)
+  FunIso {C = C} {D = D} (functor OMap₁ HMap₁ fid₁ fcomp₁) f (iso inv rinv linv) = 
+    let open Cat C using () renaming (_∙_ to _∙c_)
+        open Cat D using () renaming (_∙_ to _∙d_)
+    in iso
+        (HMap₁ inv)
+        (proof
+          (HMap₁ f ∙d HMap₁ inv)
+         ≅⟨ sym fcomp₁ ⟩
+          HMap₁ (f ∙c inv)
+         ≅⟨ cong HMap₁ rinv ⟩
+          HMap₁ (iden C)
+         ≅⟨ fid₁ ⟩
+          iden D
+         ∎)
+        (proof
+          HMap₁ inv ∙d HMap₁ f
+         ≅⟨ sym fcomp₁ ⟩
+          HMap₁ (inv ∙c f)
+         ≅⟨ cong HMap₁ linv ⟩
+          HMap₁ (iden C)
+         ≅⟨ fid₁ ⟩
+          iden D
+         ∎)
 
 --------------------------------------------------
 {- Ejercicio EXTRA: Sea C una categoría con productos. Probar
@@ -220,3 +278,4 @@ FunIso  = {! !}
 -}
 
 
+ 
