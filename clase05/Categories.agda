@@ -278,31 +278,75 @@ module ArrowCat (C : Cat) where
   open Cat C
 
 
-  record ArrowObj : Set₁ where
+  record Arrow₀ : Set₁ where
     field
       from : Obj
       to : Obj
       hom : Hom from to 
-  open ArrowObj
+  open Arrow₀
 
-  record ArrowMorf {A A' B B' : ArrowObj}
-                   (f : Hom (ArrowObj.from A) (ArrowObj.to B)) 
-                   (f' : Hom (ArrowObj.from A') (ArrowObj.to B')) : Set where 
-    constructor _,_
+  record Arrow₁ (f f' : Arrow₀) : Set where
     field
-      g₁ : Hom (ArrowObj.from A) (ArrowObj.from A')
-      g₂ : Hom (ArrowObj.to B) (ArrowObj.to B')
-      prop :  f' ∙ g₁ ≡ g₂ ∙ f
+      baseHom : (Hom (from f) (from f')) × (Hom (to f) (to f'))
+      prop : hom f' ∙ fst baseHom ≡ snd baseHom ∙ (hom f)
+  open Arrow₁
 
-  ArrowHom : ArrowObj → ArrowObj → Set
-  ArrowHom ?
+
+  iden-proof : {X : Arrow₀} -> hom X ∙ iden ≡ iden ∙ hom X
+  iden-proof {X} = proof
+                    hom X ∙ iden
+                   ≡⟨ idr ⟩
+                    hom X
+                   ≡⟨ sym idl ⟩
+                    iden ∙ hom X
+                   ∎
+  
+  iden-hom : {X : Arrow₀} -> Arrow₁ X X
+  iden-hom = record { baseHom = iden , iden ; prop = iden-proof }
+
+  ∙-proof : {X Y Z : Arrow₀} -> Arrow₁ Y Z -> Arrow₁ X Y -> Arrow₁ X Z
+  ∙-proof {X} {Y} {Z} g f = record
+                              { baseHom = (fst (baseHom g)) ∙ (fst (baseHom f)) , (snd (baseHom g)) ∙ (snd (baseHom f))
+                              ; prop = proof
+                                        hom Z ∙ (fst (baseHom g) ∙ fst (baseHom f))
+                                       ≡⟨ sym ass ⟩
+                                        (hom Z ∙ fst (baseHom g)) ∙ fst (baseHom f)
+                                       ≡⟨ cong (_∙ fst (baseHom f)) (prop g) ⟩
+                                        (snd (baseHom g) ∙ hom Y) ∙ fst (baseHom f)
+                                       ≡⟨ ass ⟩
+                                        snd (baseHom g) ∙ (hom Y ∙ fst (baseHom f))
+                                       ≡⟨ cong (snd (baseHom g) ∙_) (prop f) ⟩
+                                        snd (baseHom g) ∙ (snd (baseHom f) ∙ hom X)
+                                       ≡⟨ sym ass ⟩
+                                        (snd (baseHom g) ∙ snd (baseHom f)) ∙ hom X
+                                       ∎
+                              }
+
+  Arrow₁-eq : {X Y : Arrow₀} {f f' : Arrow₁ X Y} -> baseHom f ≡ baseHom f' -> f ≡ f'
+  Arrow₁-eq {f = record { baseHom = baseHom₁ ; prop = prop₁ }}
+            {record { baseHom = .baseHom₁ ; prop = prop }}
+            refl = cong (λ p → record { baseHom = baseHom₁ ; prop = p }) (ir prop₁ prop)
+
+  idl-proof : {X Y : Arrow₀} {f : Arrow₁ X Y} ->
+              ∙-proof iden-hom f ≡ f
+  idl-proof {X} {Y} {f} = proof
+                            ∙-proof iden-hom f
+                          ≡⟨ {!  !} ⟩
+                            {!   !}
+                          ≡⟨ {!   !} ⟩
+                            {!   !}
+                          ≡⟨ {!   !} ⟩
+                            {!   !}
+                          ≡⟨ {!   !} ⟩
+                            f
+                          ∎
 
   ArrowCat : Cat
   ArrowCat = record
-               { Obj = ArrowObj
-               ; Hom = {!   !}
-               ; iden = {!   !} 
-               ; _∙_ = {!   !}
+               { Obj = Arrow₀
+               ; Hom = Arrow₁
+               ; iden = iden-hom
+               ; _∙_ = ∙-proof
                ; idl = {!   !}
                ; idr = {!   !}
                ; ass = {!   !}
@@ -355,4 +399,4 @@ Ayuda : puede ser útil usar cong-app
 -}
 
 --------------------------------------------------
-   
+     

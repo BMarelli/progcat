@@ -117,48 +117,83 @@ FunctorCat C D = let open Cat D
 
 module Ejemplos where
 
- open import Categories.Sets
- open import Functors.List
- open import Functors.Maybe
- open import Functors.Constant
- open import Data.Nat
+  open import Categories.Sets
+  open import Functors.List
+  open import Functors.Maybe
+  open import Functors.Constant
+  open import Data.Nat
 
- {- reverse es una transformación natural -}
+  {- reverse es una transformación natural -}
 
- open Cat (Sets {lzero})
+  open Cat (Sets {lzero})
 
- reverse-naturality : ∀{X Y : Set}{f : X → Y}(xs ys : List X) → 
-          mapList f (foldl (λ ys y → y ∷ ys) ys xs) ≅ 
-          foldl (λ ys y → y ∷ ys) (mapList f ys) (mapList f xs)
- reverse-naturality [] ys = refl
- reverse-naturality (x ∷ xs) ys = reverse-naturality xs (x ∷ ys)
- --
- revNat : NatT ListF ListF
- revNat = natural (λ- reverse) 
-                (ext (λ xs → reverse-naturality xs []))
+  reverse-naturality : ∀{X Y : Set}{f : X → Y}(xs ys : List X) → 
+           mapList f (foldl (λ ys y → y ∷ ys) ys xs) ≅ 
+           foldl (λ ys y → y ∷ ys) (mapList f ys) (mapList f xs)
+  reverse-naturality [] ys = refl
+  reverse-naturality (x ∷ xs) ys = reverse-naturality xs (x ∷ ys)
+  --
+  revNat : NatT ListF ListF
+  revNat = natural (λ- reverse) 
+                 (ext (λ xs → reverse-naturality xs []))
 
-{- Definimos las transformaciones naturales en NatT con la componente explícita.
-  Las funciones de librería como reverse están definidas con su componente
-  implícita. El operador λ- convierte una función implícita en explícita.
--}
+  {- Definimos las transformaciones naturales en NatT con la componente explícita.
+    Las funciones de librería como reverse están definidas con su componente
+    implícita. El operador λ- convierte una función implícita en explícita.
+  -}
 
--- Ejercicio: probar que concat es una transformación natural
- concatNat : NatT (ListF ○ ListF) ListF
- concatNat = {!   !} 
+  dist-map-++ : ∀{X Y : Set}{f : X -> Y}(xs : List X) -> (xss : List (List X)) ->
+                mapList f (xs ++ (foldr _++_ [] xss)) ≅ (mapList f xs) ++ (mapList f (foldr _++_ [] xss))
+  dist-map-++ [] xss = refl
+  dist-map-++ {f = f} (x ∷ xs) xss = cong ((f x) ∷_) (dist-map-++ xs xss)
 
- --
--- Ejercicio: probar que length es una transformación natural
--- ¿Entre qué funtores es una transformación natural?
- lengthNat : NatT {!   !} {!   !}
- lengthNat = {!   !}
+  -- Ejercicio: probar que concat es una transformación natural
+  concat-naturality : ∀{X Y : Set}{f : X -> Y}(xs : List (List X)) ->
+                      mapList f (foldr _++_ [] xs) ≅ foldr _++_ [] (mapList (mapList f) xs)
+  concat-naturality [] = refl
+  concat-naturality {f = f} (xs ∷ xss) = proof
+                                          mapList f (xs ++ (foldr _++_ [] xss))
+                                         ≅⟨ dist-map-++ xs xss ⟩
+                                          mapList f xs ++ mapList f (foldr _++_ [] xss)
+                                         ≅⟨ cong (mapList f xs ++_) (concat-naturality xss) ⟩
+                                          mapList f xs ++ foldr _++_ [] (mapList (mapList f) xss)
+                                         ≅⟨ refl ⟩
+                                          foldr _++_ [] (mapList (mapList f) (xs ∷ xss))
+                                         ∎
 
--- Ejercicio: probar que safehead es una transformación natural
- safeHead : {A : Set} → List A → Maybe A
- safeHead [] = nothing
- safeHead (x ∷ xs) = just x
+  concatNat : NatT (ListF ○ ListF) ListF
+  concatNat = natural
+              (λ- concat)
+              (ext (λ xs → concat-naturality xs)) 
 
- headNat : NatT ListF MaybeF
- headNat = {!   !}
+  --
+  -- Ejercicio: probar que length es una transformación natural
+  -- ¿Entre qué funtores es una transformación natural?
+  length-naturality : ∀{X Y : Set}{f : X -> Y}(xs : List X) ->
+                      foldr (λ _ → suc) 0 xs ≅ foldr (λ _ → suc) 0 (mapList f xs)
+  length-naturality [] = refl
+  length-naturality {f = f} (x ∷ xs) = proof
+                                         suc (foldr (λ _ → suc) 0 xs)
+                                       ≅⟨ cong suc (length-naturality xs) ⟩
+                                         suc (foldr (λ _ → suc) 0 (mapList f xs))
+                                       ≅⟨ refl ⟩
+                                         foldr (λ _ → suc) 0 (mapList f (x ∷ xs))
+                                       ∎
+  lengthNat : NatT ListF (K ℕ)
+  lengthNat = natural
+                (λ- length)
+                (ext (λ xs → length-naturality xs))
+
+  -- Ejercicio: probar que safehead es una transformación natural
+  safeHead : {A : Set} → List A → Maybe A
+  safeHead [] = nothing
+  safeHead (x ∷ xs) = just x
+
+  headNat : NatT ListF MaybeF
+  headNat = natural
+              (λ- safeHead)
+              (ext λ { [] → refl
+                     ; (x ∷ xs) → refl })
  
  --
 --------------------------------------------------
@@ -198,7 +233,8 @@ compFNat {D = D} {E = E} {F} {G} J t =
                    open Cat D renaming (_∙_ to _∙D_)
                    open Cat E renaming (_∙_ to _∙E_)
                in
-               natural (λ X → HMap J (η X))
+               natural
+                (λ X → HMap J (η X))
                 (λ {X Y f} → proof
                   (HMap J (HMap G f) ∙E HMap J (η X))  
                 ≅⟨ sym (fcomp J) ⟩
@@ -240,18 +276,25 @@ compHNat : ∀{F G : Fun C D}{J K : Fun D E}
 compHNat {D = D}{E = E}{F = F}{G} {J}{K} η ε = 
    let open Cat E
        open Cat D using () renaming (_∙_ to _∙D_)
-   in natural {!   !}
-              λ {X Y f} → 
-              proof 
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}
-              ∎
+   in natural
+        (λ X → (cmp ε (OMap G X)) ∙ (HMap J (cmp η X)))
+        λ {X Y f} → proof 
+                      {!   !}
+                    ≅⟨  {!   !} ⟩
+                      {!   !}
+                    ≅⟨  {!   !} ⟩
+                      {!   !}
+                    ≅⟨  {!   !} ⟩
+                      {!   !}
+                    ≅⟨  {!   !} ⟩
+                      {!   !}
+                    ≅⟨  {!   !} ⟩
+                      {!   !}
+                    ≅⟨  {!   !} ⟩
+                      {!   !}
+                    ≅⟨  {!   !} ⟩
+                      {!   !}
+                    ∎
 
 {-     --F-->   --J--> 
       C       D        E
@@ -308,3 +351,4 @@ module FunctorCoproduct (cop : Coproducts C) where
  copairF : ∀{F G H K} →
           (NatT {C = D} F H) → (NatT G K) → NatT (F +F G) (H +F K)
  copairF = {!   !} 
+  
