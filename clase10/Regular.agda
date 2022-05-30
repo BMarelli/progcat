@@ -54,6 +54,7 @@ data Regular : Set₁ where
 BoolF : Regular
 BoolF = U ⊕ U
 
+
 toBool : ∀ {p r} →  ⟦ BoolF ⟧ᵣ p r → Bool
 toBool (inj₁ x) = true
 toBool (inj₂ y) = false 
@@ -70,7 +71,7 @@ open import Data.List hiding (map ; sum)
 -- List A B = 1 + A × B
 -- List = 1 + P × I
 
-
+-- No podemos definirlo, falta modelar recursión
 toList' : ∀ {r} {A} → ⟦ U ⊕ (P ⊗ I) ⟧ᵣ A r → List A 
 toList' x = {!!} 
 
@@ -180,8 +181,14 @@ Algebra F p A =  ⟦ F ⟧ᵣ p A → A
 elements : ∀ {F : Regular} {A : Set} → μ F A  → ℕ
 elements {F} {A} = fold {F} (alg {F}) 
      where alg : ∀ {F' : Regular} → Algebra F' A ℕ
-           alg {F'} x = {!!}
-           
+           alg {U} x = 0
+           alg {K A} x = 0
+           alg {P} x = 1
+           alg {F' ⊗ F''} (x , y) = alg {F'} x + alg {F''} y
+           alg {F' ⊕ F''} (inj₁ x) = alg {F'} x
+           alg {F' ⊕ F''} (inj₂ y) = alg {F''} y
+           alg {I} x = x
+       
 
 
 sl : ℕ
@@ -190,7 +197,7 @@ sl = elements (fromList (2 ∷ 4 ∷ 5 ∷ []))
 
 -- Derivamos la definición de foldL a partir de fold
 foldL : ∀ {A B} → B → (A × B → B) → List A → B
-foldL {A} n c xs = fold {!!} (fromList xs) 
+foldL {A} n c xs = fold ([_,_] (λ _ → n) c) (fromList xs) 
 
 
 
