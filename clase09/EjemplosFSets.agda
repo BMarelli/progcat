@@ -26,11 +26,11 @@ open import Data.Sum renaming (_⊎_ to _+_) hiding ([_,_])
  *usando suma y producto de functores*
  La idea es reusar lo que ya está definido.
  *No* definir functores usando el constructor de funtores.
-  -}
+-}
 
 -- Nat X = 1 + X
 Nat : Fun Sets Sets
-Nat = ?
+Nat = {!   !}
 
 module Nat where
 
@@ -82,11 +82,10 @@ module Nat where
   initial-ℕ = {!   !}
 
 --------------------------------------------------
-{- Definir un functor cuya algebra inicial sea las listas.
--}
+{- Definir un functor cuya algebra inicial sea las listas. -}
 
 L : (A : Set) → Fun (Sets {lzero}) (Sets {lzero})
-L A = ?
+L A = {!   !}
 
 module Listas (A : Set) where
 
@@ -119,7 +118,8 @@ module Listas (A : Set) where
 
 --------------------------------------------------
 {- Probar que los las Listas junto con foldr son el
-   álgebra inicial de L -}
+   álgebra inicial de L
+-}
 
   foldr : ∀{A X : Set} → (n : X) → (c : A → X → X) → List A → X
   foldr n c Nil = n

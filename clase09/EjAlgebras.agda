@@ -121,5 +121,5 @@ module Maybe where
   open import Data.List hiding ([_])
 
   List-alg : F-algebra
-  List-alg = falgebra (List ⊤) [ (λ _ → []) , {!   !} ]
+  List-alg = falgebra (List ⊤) [ (λ _ → []) , id ]
   

@@ -25,12 +25,12 @@ open Fun F
     un morfismo h entre los portadores de las algebras A → B
     una prueba de que se preserva la estructura:
 
-        FA ----HMap F h ----> FB
+        FA ---- HMap F h ---> FB
         |                      |
         α                      β
         |                      |
         V                      V
-        a-----------h--------> B
+        A --------- h -------> B
 -}
 
 open Cat C
@@ -78,9 +78,9 @@ iden-homo {h} = record {
 {- La composición de homomorfismo es un homomorfismo -}
 --composition of homomorphisms
 comp-homo : {x y z : F-algebra} 
-         → (F-homomorphism) y z
-         → (F-homomorphism) x y
-         → (F-homomorphism) x z
+         → F-homomorphism y z
+         → F-homomorphism x y
+         → F-homomorphism x z
 comp-homo {x}{y}{z} h k = record {
                homo-base = homo-base h ∙ homo-base k ;
                homo-prop = proof
@@ -131,7 +131,7 @@ mapF falg = falgebra (OMap (carrier falg)) (HMap (algebra falg))
    nos devuelve sólo el portador de las algebras y el morfismo base
 -}
    
-ForgetfulAlgebra : Fun (F-AlgebraCat) C
+ForgetfulAlgebra : Fun F-AlgebraCat C
 ForgetfulAlgebra = record{ OMap = carrier
                      ; HMap = homo-base
                      ; fid = refl
@@ -198,8 +198,7 @@ open F-algebra
 
 alg-fusion : (f g : F-algebra) → (h : F-homomorphism f g) 
        →  comp-homo h (init-homo {f}) ≅ init-homo {g}
-alg-fusion (falgebra A f) (falgebra B g) (homo h homo-prop) 
-     = sym univ
+alg-fusion (falgebra A f) (falgebra B g) (homo h homo-prop) = sym univ
 
 {- Ejercicio: Probar el lema "funcional" de fusion -}
 fusion : ∀{A B} → (f : Hom (OMap A) A) 
@@ -207,5 +206,4 @@ fusion : ∀{A B} → (f : Hom (OMap A) A)
                 → (h : Hom A B) 
                 → (h ∙ f ≅ g ∙ HMap h) 
                 → h ∙ fold f ≅ fold g
-fusion {A} {B} f g h p = {!   !}
-
+fusion {A} {B} f g h p = cong homo-base (alg-fusion (falgebra A f) (falgebra B g) (homo h p))
