@@ -12,6 +12,10 @@ open import Data.Nat
 open import Data.Bool
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl ; cong ; cong₂)
 
+-- Trees with node values of type N and leaf values of type L
+data Tree (N : Set) : Set₁ where
+  leaf : Tree N
+  node : Tree N → N → Tree N → Tree N
 
 -- Universo para los tipos de datos Regulares
 {-
@@ -51,10 +55,12 @@ BoolF : Regular
 BoolF = U ⊕ U
 
 toBool : ∀ {p r} →  ⟦ BoolF ⟧ᵣ p r → Bool
-toBool x = {!!} 
+toBool (inj₁ x) = true
+toBool (inj₂ y) = false 
 
 fromBool : ∀ {p r} → Bool → ⟦ BoolF ⟧ᵣ p r
-fromBool x = {!!} 
+fromBool false = inj₁ tt
+fromBool true = inj₂ tt 
 
 
 -- ¿Podremos hacer los mismo con listas? 
@@ -67,10 +73,6 @@ open import Data.List hiding (map ; sum)
 
 toList' : ∀ {r} {A} → ⟦ U ⊕ (P ⊗ I) ⟧ᵣ A r → List A 
 toList' x = {!!} 
-
-
-
-
 
 
 
@@ -118,10 +120,12 @@ open Iso
 
 -- Completar
 iso1 : ∀ {A}{x} → toList {A} (fromList {A} x) ≡ x
-iso1 {_} {x} = {!!}  
+iso1 {_} {[]} = refl
+iso1 {_} {x ∷ xs} = cong (x ∷_) iso1  
 
 iso2 : ∀ {A}{x} → fromList {A} (toList {A} x) ≡ x
-iso2 {_} {x} = {!!} 
+iso2 {_} {⟨ inj₁ tt ⟩} = refl
+iso2 {_} {⟨ inj₂ (fst , snd) ⟩} = cong ⟨_⟩ (cong (λ x → inj₂ (fst , x)) iso2)
 
 listIso : ∀ {A : Set} → Iso (LIST A) (List A) (toList {A})
 listIso = iso fromList iso1 iso2 
@@ -130,7 +134,13 @@ listIso = iso fromList iso1 iso2
 -- Definición genérica de map para los tipos de datos regulares
 
 map : ∀ {A B C D} → (F : Regular) → (A → B) → (C → D) → ⟦ F ⟧ᵣ A C → ⟦ F ⟧ᵣ B D
-map F f g x = {!!} 
+map U f g x = x
+map (K A) f g x = x
+map P f g x = f x
+map (F ⊗ F₁) f g (fst , snd) = (map F f g fst) , (map F₁ f g snd)
+map (F ⊕ F₁) f g (inj₁ x) = inj₁ (map F f g x)
+map (F ⊕ F₁) f g (inj₂ y) = inj₂ (map F₁ f g y)
+map I f g x = g x 
 
 -- Definición de fold 
 -- fold (h) . inF = h . F fold (h)
@@ -191,7 +201,7 @@ n = foldL 0 (λ { (x , y) → x + y}) (1 ∷ 2 ∷ [])
 
 -- Ejercicio 1) Completar las siguientes definiciones
 
-open import Data.Tree.Binary 
+-- open import Data.Tree.Binary 
 
 -- Functor que captura la estructura de los árboles binarios
 TreeF : Regular
