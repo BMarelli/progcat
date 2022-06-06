@@ -29,7 +29,7 @@ record CCC : Set (a ⊔ b) where
 
   {- Ejercicio: completar la definición -}
   map⇒ : ∀{X Y Z} → Hom X Z → Hom (Y ⇒ X) (Y ⇒ Z)
-  map⇒ f = {!   !}
+  map⇒ f = curry (f ∙ apply)
 
 module Properties (isCCC : CCC) where
   open CCC isCCC
@@ -39,7 +39,15 @@ module Properties (isCCC : CCC) where
  
   {- Ejercicio: map⇒ preserva identidades. -}
   map⇒iden : ∀{X Y} → map⇒ {X} {Y} {X} (iden {X}) ≅ iden {Y ⇒ X}
-  map⇒iden = {!   !}
+  map⇒iden = proof
+                map⇒ iden
+             ≅⟨ {!   !} ⟩
+                {!   !}
+             ≅⟨ {!   !} ⟩
+                {!   !}
+             ≅⟨ {!   !} ⟩
+                iden
+             ∎
 
   {- Ejercicio: Propiedad de curry con map⇒. Caso particular de nat-curry, con f = iden. -}
   curry-prop : ∀{X Y Z Z'}{f : Hom (X × Y) Z}{g : Hom Z Z'}
