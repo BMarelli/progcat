@@ -12,11 +12,6 @@ open import Data.Nat
 open import Data.Bool
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl ; cong ; cong₂)
 
--- Trees with node values of type N and leaf values of type L
-data Tree (N : Set) : Set₁ where
-  leaf : Tree N
-  node : Tree N → N → Tree N → Tree N
-
 -- Universo para los tipos de datos Regulares
 {-
  Símbolos : \o+ ⊕ , \ox  ⊗ , \u+ ⊎ , \[[ \]]  ⟦ ⟧      
@@ -197,7 +192,7 @@ sl = elements (fromList (2 ∷ 4 ∷ 5 ∷ []))
 
 -- Derivamos la definición de foldL a partir de fold
 foldL : ∀ {A B} → B → (A × B → B) → List A → B
-foldL {A} n c xs = fold ([_,_] (λ _ → n) c) (fromList xs) 
+foldL {A} n c xs = fold ([_,_] (λ _ → n) c) (fromList xs)
 
 
 
@@ -205,14 +200,19 @@ foldL {A} n c xs = fold ([_,_] (λ _ → n) c) (fromList xs)
 n : ℕ
 n = foldL 0 (λ { (x , y) → x + y}) (1 ∷ 2 ∷ [])
 
-
 -- Ejercicio 1) Completar las siguientes definiciones
 
--- open import Data.Tree.Binary 
+-- Data BTree A = L | N (BTree A) A (BTree A)
+-- Trees with node values of type N and leaf values of type L
+data Tree (N : Set) : Set₁ where
+  leaf : Tree N
+  node : Tree N → N → Tree N → Tree N
 
+-- open import Data.Tree.Binary 
 -- Functor que captura la estructura de los árboles binarios
+
 TreeF : Regular
-TreeF = {!!} 
+TreeF = U ⊕ (I ⊗ (P ⊗ I))
 
 -- Árboles representados como el punto fijo de su signatura
 
@@ -221,14 +221,17 @@ TREE A = μ TreeF A
 
 -- Isomorfismo entre Tree A y TREE A
 toTree : ∀ {A} → TREE A → Tree A
-toTree x = {!!}
+toTree ⟨ inj₁ x ⟩ = leaf
+toTree ⟨ inj₂ (l , v , r) ⟩ = node (toTree l) v (toTree r )
 
 fromTree : ∀ {A} → Tree A → TREE A 
-fromTree x = {!!} 
+fromTree leaf = ⟨ (inj₁ tt) ⟩
+fromTree (node l v r) = ⟨ (inj₂ (fromTree l , v , (fromTree r))) ⟩ 
 
 -- Definir foldT en términos de foldT
 foldT : ∀ {A B} → B → (B × (A × B) → B) → Tree A → B
-foldT l n t = {!!} 
+foldT l n leaf = l
+foldT l n (node t x t₁) = n ((foldT l n t) , (x , (foldT l n t₁))) 
 
 
 -- Ejercicio 2) Definir una función genérica depth, que calcule la profundidad de un
@@ -237,7 +240,13 @@ foldT l n t = {!!}
 depth : ∀ {F : Regular} {A : Set} → μ F A → ℕ
 depth {F} {A} = fold {F} (alg {F}) 
    where alg : ∀ {F'} → Algebra F' A ℕ
-         alg {F'}  x = {!!} 
+         alg {U} x = 1
+         alg {K A} x = 1
+         alg {P} x = 1
+         alg {F' ⊗ F''} (fst , snd) = {! alg {F'} fst (?) alg {F''} snd  !}
+         alg {F' ⊕ F''} (inj₁ x) = alg {F'} x
+         alg {F' ⊕ F''} (inj₂ y) = alg {F''} y
+         alg {I} x = x 
 
 
 -- función que calcula la altura de un árbol
@@ -251,9 +260,3 @@ height t = pred (depth (fromTree t))
 
 sum : ∀ {F : Regular} → μ F ℕ  → ℕ
 sum {F} = {!!}  
-
-
-
-
-
-
