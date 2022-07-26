@@ -20,10 +20,10 @@ open import Functors
 
   Para poder demostrar esto vamos a realizar 3 pasos:
     (1) Definir un morfismo η-map : Hom(yX, F) -> FX
-    (2) Definir un morfismo δₐ : FX -> Hom(yX(X), FX)
+    (2) Definir un morfismo δₐ : FX -> Hom(yX, F)
        Notemos que δₐ toma un a ∈ FX nos devuelve una transformacion lineal
        (demostrar naturalidad)
-    (3) Demostrar que los morfismos en (1) y (2) son mutuamente inversas
+    (3) Demostrar que los morfismos en (1) y (2) son mutuamente inversos
 -}
 
 module yoneda.Yoneda {C : Cat {lzero} {lzero}} where -- Categoria localmente chica
@@ -32,12 +32,7 @@ open Cat C
 
 {-
   yoneda : C Op -> Sets
-  Sean X,A,B ∈ Obj C y f ∈ Hom(A, B) morfismo en la categoria C
-  Luego el funtor de yoneda se comporta de la siguiente forma:
-    - yoneda{X}(A) : Hom(A, X)
-    - yoneda{X}(f) : yoneda{X}(B) -> yoneda{X}(A)
-
-  Ejemplo: Dado X,Y,Z ∈ Obj C y f ∈ Hom (Y, Z)
+  Sean X,Y,Z ∈ Obj C y f ∈ Hom (Y, Z)
     yoneda{X}(Y) = Hom(Y, X)
     yoneda{X}(f) : yoneda{X}(Z) -> yoneda{X}(Y)
                  : Hom(Z, X) -> Hom(Y, X)
@@ -67,19 +62,20 @@ yoneda {X} = functor
               in cmp X iden
 
 {-
-  (1)
+  (2)
   Ahora para el otro lado, dado cualquier a ∈ FX, definimos la transformacion natural:
       δₐ : yX -> F
   Dado un X' : Obj
-      δₐX : yX(X') -> FX'
-      δₐX : Hom(X', X) -> FX'
-      δₐX(h) = F(h) a
+      δₐX' : yX(X') -> FX'
+      δₐX' : Hom(X', X) -> FX'
+      δₐX'(h) = F(h) a
   
   A nosotros nos va a quedar δₐ un morfismo que toma a ∈ FX y nos devuelve la transformacion natural.
-  Notemos que dado a ∈ FX, X' : Obj,
+  Notemos que dado a ∈ FX, X' ∈ Obj C,
     (NatT.cmp δₐ) X' : Hom(X', X) -> FX'
 
   Para demostrar la condición de naturalidad hay que considerar el siguiente diagrama:
+  Dado f : Hom(X', Y)
 
   yX(X') ------ yX(f) -----> yX(Y)     Hom(X', X) ------ yX(f) -----> Hom(Y, X)
     |                         |         |                               |
