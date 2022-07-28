@@ -20,8 +20,8 @@ open import Functors
 
   Para poder demostrar esto vamos a realizar 3 pasos:
     (1) Definir un morfismo η-map : Hom(yX, F) -> FX
-    (2) Definir un morfismo δₐ : FX -> Hom(yX, F)
-       Notemos que δₐ toma un a ∈ FX nos devuelve una transformacion lineal
+    (2) Definir un morfismo ρ : FX -> Hom(yX, F)
+       Notemos que ρ toma un a ∈ FX nos devuelve una transformacion lineal
        (demostrar naturalidad)
     (3) Demostrar que los morfismos en (1) y (2) son mutuamente inversos
 -}
@@ -63,16 +63,17 @@ yoneda {X} = functor
 
 {-
   (2)
-  Ahora para el otro lado, dado cualquier a ∈ FX, definimos la transformacion natural:
-      δₐ : yX -> F
+  Ahora para el otro lado, definamos ρ : FX -> Hom(yX, F)
+  Notemos que dado cualquier a ∈ FX, definimos la transformacion natural:
+      ρₐ : yX -> F
   Dado un X' : Obj
-      δₐX' : yX(X') -> FX'
-      δₐX' : Hom(X', X) -> FX'
-      δₐX'(h) = F(h) a
+      ρₐX' : yX(X') -> FX'
+      ρₐX' : Hom(X', X) -> FX'
+      ρₐX'(h) = F(h) a
   
-  A nosotros nos va a quedar δₐ un morfismo que toma a ∈ FX y nos devuelve la transformacion natural.
+  A nosotros nos va a quedar ρ un morfismo que toma a ∈ FX y nos devuelve la transformacion natural.
   Notemos que dado a ∈ FX, X' ∈ Obj C,
-    (NatT.cmp δₐ) X' : Hom(X', X) -> FX'
+    (NatT.cmp (ρ a) ) X' : Hom(X', X) -> FX'
 
   Para demostrar la condición de naturalidad hay que considerar el siguiente diagrama:
   Dado f : Hom(X', Y)
@@ -80,43 +81,43 @@ yoneda {X} = functor
   yX(X') ------ yX(f) -----> yX(Y)     Hom(X', X) ------ yX(f) -----> Hom(Y, X)
     |                         |         |                               |
     |                         |         |                               |
-   δₐ X'                      δₐ Y      δₐ X'                            δₐ Y
+   ρₐ X'                      ρₐ Y      ρₐ X'                            ρₐ Y
     |                         |         |                               |
     |                         |         |                               |
     V                         V         V                               V
   FX'    ------ F(f)  -----> FY        FX'  ------------ F(f)  ----->  FY
 
   Dado h ∈ yX(X'), queremos demostrar que:
-    δₐ Y ∙ yX(f)(h) ≅ F(f) ∙ δₐ X' h
+    ρₐ Y ∙ yX(f)(h) ≅ F(f) ∙ ρₐ X' h
   Sabemos por definicion que:
-  (∙) δₐ Y (h) = F(h) a
+  (∙) ρₐ Y (h) = F(h) a
   (∙) yX(f)(h) = h ∙ f
   Luego nos queda:
-    δₐ Y ∙ yX(f)(h) ≅ F(h ∙ f) a
+    ρₐ Y ∙ yX(f)(h) ≅ F(h ∙ f) a
 -}
 
-δₐ : {X : Obj} {F : Fun (C Op) Sets} -> Cat.Hom Sets (Fun.OMap F X) (NatT yoneda F)
-δₐ {F = F} a = let open Fun F
-               in natural
-                  (λ X' h → (HMap h) a) -- (X' : Obj) → Hom X' X → OMap X
-                  -- {X' Y : Obj} {f : Hom Y X'} →
-                  -- (λ h → HMap f (HMap h a)) ≅ (λ h → HMap (h ∙ f) a)
-                  (λ {X Y} {f} → ext (λ h → sym (proof
-                                                   HMap (h ∙ f) a
-                                                 ≅⟨ cong (λ g → g a) fcomp ⟩
-                                                   HMap f (HMap h a)
-                                                 ∎)))
+ρ : {X : Obj} {F : Fun (C Op) Sets} -> Cat.Hom Sets (Fun.OMap F X) (NatT yoneda F)
+ρ {F = F} a = let open Fun F
+              in natural
+                 (λ X' h → (HMap h) a) -- (X' : Obj) → Hom X' X → OMap X
+                 -- {X' Y : Obj} {f : Hom Y X'} →
+                 -- (λ h → HMap f (HMap h a)) ≅ (λ h → HMap (h ∙ f) a)
+                 (λ {X Y} {f} → ext (λ h → sym (proof
+                                                  HMap (h ∙ f) a
+                                                ≅⟨ cong (λ g → g a) fcomp ⟩
+                                                  HMap f (HMap h a)
+                                                ∎)))
 
 {-
   (3)
-  Ahora demostremos que η-map y δₐ son mutuamente inversas:
+  Ahora demostremos que η-map y ρ son mutuamente inversas:
 
   Primero demostremos que dado X,X' ∈ Obj C y δ : yX -> F,
-    δₐ (η-map δ) ≅ δ
+    ρ (η-map δ) ≅ δ
   Si instanciamos en X' nos queda:
-    δₐ (η-map δ) X' ≅ δ X'
+    ρ (η-map δ) X' ≅ δ X'
   Notemos que:
-    (a) δₐ (η-map δ) X' : Hom(X', X) -> FX'
+    (a) ρ (η-map δ) X' : Hom(X', X) -> FX'
     (b) δ X' : Hom(X', X) -> FX'
   Como (a) (b) son transformaciones naturales mas adelante vamos
   a utilizar NatTEq (queremos ver que son iguales)
@@ -132,14 +133,14 @@ yoneda {X} = functor
   FX    -----  F h  ----> FX'
 -}
 
-δₐ-inv-η-map : {X X' : Obj} {F : Fun (C Op) Sets} {δ : NatT (yoneda {X}) F} ->
-               (NatT.cmp (δₐ {X} {F} (η-map {X} {F} δ))) X' ≅ NatT.cmp δ X'
-δₐ-inv-η-map {X} {X'} {F} {δ} =
-    let open NatT (δₐ {X} {F} (η-map {X} {F} δ)) renaming (cmp to ρ'; nat to ρ-nat) -- rename
+ρ-inv-η-map : {X X' : Obj} {F : Fun (C Op) Sets} {δ : NatT (yoneda {X}) F} ->
+               (NatT.cmp (ρ {X} {F} (η-map {X} {F} δ))) X' ≅ NatT.cmp δ X'
+ρ-inv-η-map {X} {X'} {F} {δ} =
+    let open NatT (ρ {X} {F} (η-map {X} {F} δ)) renaming (cmp to ρ'; nat to ρ-nat)
         open NatT (δ) renaming (cmp to δ'; nat to δ-nat)
         open Fun (yoneda {X}) renaming (OMap to yX-OMap; HMap to yX-HMap; fid to yX-fid; fcomp to yX-fcomp)
         open Fun F renaming (OMap to F-OMap; HMap to F-HMap; fid to F-fid; fcomp to F-fcomp)
-    -- Dado h : Hom X' X queremos probar δₐ' X' h ≅ δ' X' h
+    -- Dado h : Hom X' X queremos probar ρ' X' h ≅ δ' X' h
     in ext (λ h → proof
                     ρ' X' h
                   ≅⟨ refl ⟩
@@ -152,16 +153,16 @@ yoneda {X} = functor
                   ∎)
 {-
   Ahora demostremos que dado X ∈ Obj C y a ∈ FX,
-    η-map (δₐ a) ≅ a
+    η-map (ρ a) ≅ a
 -}
 
-η-map-inv-δₐ : {X : Obj} {F : Fun (C Op) Sets} {a : Fun.OMap F X} ->
-               η-map (δₐ {X} {F} a) ≅ a
-η-map-inv-δₐ {X} {F} {a} =
+η-map-inv-ρ : {X : Obj} {F : Fun (C Op) Sets} {a : Fun.OMap F X} ->
+               η-map (ρ {X} {F} a) ≅ a
+η-map-inv-ρ {X} {F} {a} =
     let open Fun F
-        open NatT (δₐ {X} {F} a)
+        open NatT (ρ {X} {F} a)
     in proof
-        η-map (δₐ {X} {F} a)
+        η-map (ρ {X} {F} a)
        ≅⟨ refl ⟩
         cmp X iden
        ≅⟨ refl ⟩
@@ -172,7 +173,7 @@ yoneda {X} = functor
 
 lemma-yoneda : {X : Obj} {F : Fun (C Op) Sets} -> Iso (η-map {X} {F})
 lemma-yoneda {X} {F} = iso
-                        δₐ
-                        (ext (λ a → η-map-inv-δₐ {X} {F} {a}))
-                        (ext (λ δ → NatTEq (ext (λ X' → δₐ-inv-η-map {X} {X'} {F} {δ}))))
+                        ρ
+                        (ext (λ a → η-map-inv-ρ {X} {F} {a}))
+                        (ext (λ δ → NatTEq (ext (λ X' → ρ-inv-η-map {X} {X'} {F} {δ}))))
  
