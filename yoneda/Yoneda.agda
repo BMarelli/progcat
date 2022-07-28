@@ -119,8 +119,11 @@ yoneda {X} = functor
   Notemos que:
     (a) ρ (η-map δ) X' : Hom(X', X) -> FX'
     (b) δ X' : Hom(X', X) -> FX'
-  Como (a) (b) son transformaciones naturales mas adelante vamos
-  a utilizar NatTEq (queremos ver que son iguales)
+
+  -------------------------------------------------------------------
+  |  Como (a) (b) son transformaciones naturales mas adelante vamos |
+  |  a utilizar NatTEq (queremos ver que son iguales)               |
+  -------------------------------------------------------------------
 
   Tenemos una transformacion natural: δ : yX -> F
   yX(X) ----- yX(h) ----> yX(X')
