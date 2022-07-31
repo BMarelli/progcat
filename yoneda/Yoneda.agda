@@ -41,11 +41,11 @@ open Cat C
 
 yoneda : {X : Obj} -> Fun (C Op) Sets
 yoneda {X} = functor
-              (λ Y → Hom Y X) -- Obj → Set b
-              (λ f g → g ∙ f) -- {X = X₁ : Obj} {Y : Obj} → Hom Y X₁ → Hom X₁ X → Hom Y X
-              (ext (λ _ → idr)) -- {X = X₁ : Obj} → (λ g → g ∙ iden) ≅ (λ x → x)
-              (ext (λ _ → sym ass)) -- {X = X₁ : Obj} {Y Z : Obj} {f : Hom Z Y} {g : Hom Y X₁} →
-                                    -- (λ g₁ → g₁ ∙ g ∙ f) ≅ (λ x → (x ∙ g) ∙ f)
+              (λ Y → Hom Y X)
+              (λ f g → g ∙ f)
+              (ext (λ _ → idr))
+              (ext (λ _ → sym ass))
+
 {-
   (1)
   Comenzamos definiendo el morfismo η-map:
